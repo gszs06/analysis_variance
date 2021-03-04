@@ -1,0 +1,33 @@
+#导入car和agricolae包，如果需要安装则需要在控制台窗口使用命令 install.packages("agricolae")
+library("car")
+library("agricolae")
+#！需要修改，导入文件，将自己完整的文件路径或名称（输入名称需要将文件与脚本放在同一文件夹下）替换statis_test_data.txt，文件的格式要求见“文件格式说明.png”
+data <- read.table("statis_test_data.txt")
+data$V1 <- as.factor(data$V1)
+names = 0
+#！需要修改，根据文件形状修改data[2:6]，比如自己的文件有8列，则需要将data[2:6]修改为data[2:8]
+for(i in data[2:6])
+{
+  #方差分析过程
+  oneway <- aov(i~data$V1,data=data)
+  #LSD多重分析，还有其它的多重分析函数自行选择，参考：https://vlambda.com/wz_x45GtwxNzx.html
+  out <- LSD.test(oneway,"data$V1",p.adj="none")
+  
+  mar <- out$groups
+  rownamemar <- row.names(mar)
+  newmar<-data.frame(rownamemar,mar$i,mar$groups)
+  sort<-newmar[order(newmar$rownamemar),]
+  rowname<-row.names(out$means)
+  mean<-out$means[,1]
+  sd<-out$means[,2]
+  marker<-sort$mar.groups
+  plotdata<-data.frame(rowname,mean,sd,marker)
+  print(plotdata)
+  #！需要修改，修改结果保存路径，按照自己的需求将“f:/R_code/”修改为要保存文件的路径
+  path1 = paste("f:/R_code/",as.character(names),".txt",sep="")
+  write.table(plotdata,path1)
+  names = names+1
+}
+
+#修改完成后在R的控制台窗口运行该脚本即可，运行命令：source("脚本名称")
+#运行结果见“结果说明.png”，有n个指标就会有n个txt文件，名称依次为0，1，2...n-1
